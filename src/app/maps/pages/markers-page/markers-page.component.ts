@@ -1,6 +1,11 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Map, LngLat, Marker } from 'mapbox-gl';
 
+interface MarkerAndColor{
+  color: string;
+  marker: Marker;
+}
+
 @Component({
   templateUrl: './markers-page.component.html',
   styleUrl: './markers-page.component.css'
@@ -14,6 +19,7 @@ export class MarkersPageComponent {
   public lngLat: LngLat = new LngLat(11.96, 57.71);
   public lng?: number;
   public lat?: number;
+  public markers: MarkerAndColor[] = [];
 
   constructor(){
     const { lng, lat } = this.lngLat;
@@ -43,6 +49,39 @@ export class MarkersPageComponent {
     //   .setLngLat( this.lngLat )
     //   .addTo( this.map )
 
+  }
+
+  createMarker(){
+    if(!this.map) return;
+    const color = '#xxxxxx'.replace(/x/g, y=>(Math.random()*16|0).toString(16));
+    const lngLat = this.map.getCenter();
+
+    this.addMarker(lngLat, color);
+  }
+
+  addMarker( lngLat: LngLat, color: string ){
+    if(!this.map) return;
+    const marker = new Marker({
+      color: color,
+      draggable: true
+    })
+    .setLngLat( lngLat)
+    .addTo( this.map )
+
+    this.markers.push({ color, marker});
+  }
+
+  deleteMarker(i: number){
+    this.markers[i].marker.remove();
+    this.markers.splice( i, 1 );
+  }
+
+  flyTo( marker: MarkerAndColor ){
+    const mrkr: Marker = marker.marker;
+    this.map?.flyTo({
+      zoom: 14,
+      center: mrkr.getLngLat()
+    })
   }
 
 }
